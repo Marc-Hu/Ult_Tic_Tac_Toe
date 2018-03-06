@@ -129,6 +129,8 @@ def main():
         grid[c[0]][c[1]] = False
     
     ramassable = [w.get_rowcol() for w in game.layers['ramassable']]
+    nbTarget=2
+    
     all_path = []
     for i in range(nbPlayers):
         pos = posPlayers[i]
@@ -139,18 +141,18 @@ def main():
         getPath(node,path)
         all_path.append(path)
     
-
+    #print(nbPlayers)
     for i in range(nbPlayers):
-        
+        #print(i,"test")
         for step in all_path[i]: # on fait bouger chaque joueur séquentiellement
             row,col = posPlayers[i]
 
             x_inc,y_inc = step
-            next_row = row+x_inc
-            next_col = col+y_inc
+            next_row = x_inc
+            next_col = y_inc
             # and ((next_row,next_col) not in posPlayers)
             if ((next_row,next_col) not in wallStates) and next_row>=0 and next_row<=19 and next_col>=0 and next_col<=19:
-                players[j].set_rowcol(next_row,next_col)
+                players[i].set_rowcol(next_row,next_col)
                 print ("pos :", i, next_row,next_col)
                 game.mainiteration()
     
