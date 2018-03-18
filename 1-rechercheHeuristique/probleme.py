@@ -117,7 +117,7 @@ class Noeud:
         n = self
         c=0    
         while n!=None :
-            print (n)
+            #print (n)
             n = n.pere
             c+=1 
         print ("Nombre d'étapes de la solution:", c-1)
