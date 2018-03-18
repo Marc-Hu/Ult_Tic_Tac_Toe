@@ -1,4 +1,5 @@
 from UltimateTicTacToeModel import *
+import random
 
 """
     AIPlayer is an abstract class that wraps any strategy and stick it to the game using the method move
@@ -23,6 +24,33 @@ class AIPlayer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def move(self):
         pass
+
+
+class AIPlayerRandom(AIPlayer):
+
+    def __init__(self, board, player):
+        super(AIPlayerRandom, self).__init__(board, player)
+
+    def move(self, board_move=None):
+        if board_move is None:
+            return
+        if self.board.is_taken(board_move):
+            x = random.randint(0, 2)
+            y = random.randint(0, 2)
+            while self.board.is_taken((x, y)):
+                x = random.randint(1, 2)
+                y = random.randint(1, 2)
+
+            board_move = (x, y)
+
+        x = random.randint(0, 2)
+        y = random.randint(0, 2)
+        while not self.board.cells[board_move[0]][board_move[1]].cells[x][y].is_empty():
+            x = random.randint(0, 2)
+            y = random.randint(0, 2)
+        cell_move = (x, y)
+
+        return board_move, cell_move
 
 
 """

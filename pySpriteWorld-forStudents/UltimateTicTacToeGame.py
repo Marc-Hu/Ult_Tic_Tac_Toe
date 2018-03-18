@@ -1,4 +1,4 @@
-from AI import AIPlayerMinimax
+from AI import AIPlayerMinimax, AIPlayerRandom
 from UltimateTicTacToeModel import MasterBoard, Board, CellState, State
 
 """
@@ -14,7 +14,7 @@ class UTTTGame:
         self.current_state = None  # state of the game, playing or draw or crossWIN,CircleWIN
         self.current_board_move = None  # to indicate which mini board we'll play next round
         self.cross = AIPlayerMinimax(self.board, CellState.CROSS, 3)  # first AI plays cross
-        self.circle = AIPlayerMinimax(self.board, CellState.CIRCLE, 4)  # second AI plays Cricle
+        self.circle = AIPlayerRandom(self.board,CellState.CIRCLE)  # second random player plays Cricle
         self.init_game()  # init game
 
     def play(self):
