@@ -47,10 +47,10 @@ class AIPlayerCorner(AIPlayer):
                     find=True
                     break
             if not find :
-                x=random.randint(0, len(self.rest)-1)
-                while self.board.is_taken(self.rest[x]):
-                    x=random.randint(0, len(self.rest)-1)
-                board_move=self.rest[x]
+                for i in range(len(self.rest)):
+                    if not self.board.is_taken(self.rest[i]):
+                        board_move=self.rest[i]
+                
         found=False
         for i in range(len(self.corner)):
             if self.board.cells[board_move[0]][board_move[1]].cells[self.corner[i][0]][self.corner[i][1]].is_empty():
