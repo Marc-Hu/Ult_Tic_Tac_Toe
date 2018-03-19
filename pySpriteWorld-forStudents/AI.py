@@ -1,5 +1,6 @@
 from UltimateTicTacToeModel import *
 import random
+import time
 
 """
     AIPlayer is an abstract class that wraps any strategy and stick it to the game using the method move
@@ -27,8 +28,10 @@ class AIPlayer(metaclass=abc.ABCMeta):
 
 class AIPlayerCorner(AIPlayer):
     def __init__(self, board, player):
-        super(AIPlayerRandom, self).__init__(board, player)
-        self.corner=[(0, 0), (2, 0), (0, 2), (2, 2)]
+        super(AIPlayerCorner, self).__init__(board, player)
+        self.corner=[(0, 0), (0, 1), (0, 2)]
+        self.rest=[(1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+        self.player=player
 
     def move(self, board_move=None):
         if board_move is None:
@@ -44,8 +47,22 @@ class AIPlayerCorner(AIPlayer):
                             find=True
                             board_move=(i, j)
                             break
+                        board_moves.append((i, j))
                 if find :
                     break
+            if not find :
+                x=random.randint(0, len(self.rest)-1)
+                board_moves=self.rest[x]
+        found=False
+        for i in range(len(self.corner)):
+            if self.board.cells[board_move[0]][board_move[1]].cells[self.corner[i][0]][self.corner[i][1]].is_empty():
+                cell_move=self.corner[i]
+                found=True
+        if not found:
+            for i in range(len(self.rest)):
+                if self.board.cells[board_move[0]][board_move[1]].cells[self.rest[i][0]][self.rest[i][1]].is_empty():
+                    cell_move=self.rest[i]
+        return board_move, cell_move
 
 
 
