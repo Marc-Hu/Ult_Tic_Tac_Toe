@@ -336,7 +336,7 @@ class Node:
         max_node = [-1, None]
         for child in self.children:
             if child.state.visit_count > max_node[0]:
-                max_node = [child.state.get_visit_count(), child]
+                max_node = [child.state.visit_count, child]
         return max_node[1]
 
 
@@ -358,7 +358,8 @@ class UCT:
             return float('inf')
         return (node_win_score * 1.0 / total_visit) + 1.41 * np.sqrt(np.log(total_visit) * 1.0 / node_visit)
 
-    def find_best_node_uct(self, node):
+    @staticmethod
+    def find_best_node_uct(node):
         parent_visit = node.state.visit_count
         max_node = [-1, None]
         for child in node.children:
@@ -388,25 +389,25 @@ class BoardState:
         if self.win_score != -float("inf"):
             self.win_score += score
 
-    def get_possible_states(self):
+    def get_possible_states(self, board_move):
         states = []
-        empty_cells = self.board.get_empty_cells()
+        empty_cells = self.board.get_possible_moves(board_move)
         for b_move, c_move in empty_cells:
             state = BoardState(copy.deepcopy(self.board), self.get_opponent())
             state.board.set_cell_in_board(b_move, c_move, state.player)
             states.append(state)
         return states
 
-    def random_play(self):
-        empty_cells = self.board.get_empty_cells()
-        b_move, c_move = empty_cells[random.randint(len(empty_cells) - 1)]
+    def random_play(self, board_move):
+        empty_cells = self.board.get_possible_moves(board_move)
+        b_move, c_move = empty_cells[random.randint(0, len(empty_cells) - 1)]
         self.board.set_cell_in_board(b_move, c_move, self.player)
 
     def toggle_player(self):
         self.player = CellState.CIRCLE if self.player == CellState.CROSS else CellState.CROSS
 
 
-WIN_SCORE = 10
+WIN_SCORE = 1000
 import time
 
 
@@ -414,6 +415,7 @@ class MCTS:
     def __init__(self, level=3):
         self.level = level
         self.oponent = None
+        self.board_move = None
 
     def get_millis_for_current_level(self):
         return 2 * (self.level - 1) + 1
@@ -455,7 +457,7 @@ class MCTS:
         return node
 
     def expand_node(self, node):
-        states = node.state.get_possible_states()
+        states = node.state.get_possible_states(self.board_move)
         for state in states:
             new_node = Node(state)
             new_node.parent = node
@@ -479,7 +481,7 @@ class MCTS:
             return status
         while status == State.PLAYING:
             temp_state.toggle_player()
-            temp_state.random_play()
+            temp_state.random_play(self.board_move)
             status = temp_state.board.check()
         return status
 
@@ -489,12 +491,12 @@ class AIPlayerMCTS(AIPlayer):
         super(AIPlayerMCTS, self).__init__(board, player)
         self.mcts = MCTS()
 
-    def move(self, ):
+    def move(self, board_move=None):
+        self.mcts.board_move = board_move
         board = self.mcts.find_next_move(copy.deepcopy(self.board), self.player1)
         for i in range(3):
             for j in range(3):
                 for k in range(3):
                     for l in range(3):
-                        if board.cells[i][j].cells[k][l] != self.board.cells[i][j].cells[k][l]:
+                        if board.cells[i][j].cells[k][l].get_player() != self.board.cells[i][j].cells[k][l].get_player():
                             return (i, j), (k, l)
-        
