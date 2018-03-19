@@ -25,6 +25,29 @@ class AIPlayer(metaclass=abc.ABCMeta):
     def move(self):
         pass
 
+class AIPlayerCorner(AIPlayer):
+    def __init__(self, board, player):
+        super(AIPlayerRandom, self).__init__(board, player)
+        self.corner=[(0, 0), (2, 0), (0, 2), (2, 2)]
+
+    def move(self, board_move=None):
+        if board_move is None:
+            return
+
+        if self.board.is_taken(board_move):
+            board_moves = []
+            find=False
+            for i in range(3):
+                for j in range(3):
+                    if not self.board.is_taken((i, j)):
+                        if (i, j) in self.corner :
+                            find=True
+                            board_move=(i, j)
+                            break
+                if find :
+                    break
+
+
 
 class AIPlayerRandom(AIPlayer):
 
