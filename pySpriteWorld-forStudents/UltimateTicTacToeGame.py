@@ -13,8 +13,8 @@ class UTTTGame:
         self.current_player = None
         self.current_state = None  # state of the game, playing or draw or crossWIN,CircleWIN
         self.current_board_move = None  # to indicate which mini board we'll play next round
-        self.cross = AIPlayerMinimax(self.board, CellState.CROSS, 3)  # first AI plays cross
-        self.circle = AIPlayerRandom(self.board,CellState.CIRCLE)  # second random player plays Cricle
+        self.cross = AIPlayerMinimax(self.board, CellState.CROSS)  # first AI plays cross
+        self.circle = AIPlayerRandom(self.board, CellState.CIRCLE)  # second random player plays Cricle
         self.init_game()  # init game
 
     def play(self):
@@ -40,7 +40,7 @@ class UTTTGame:
 
     def init_game(self):
         self.board.initialize()
-        self.current_player = CellState.CROSS
+        self.current_player = CellState.CIRCLE
         self.current_state = State.PLAYING
         self.current_board_move = [1, 1]
 

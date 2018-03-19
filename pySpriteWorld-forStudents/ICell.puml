@@ -1,0 +1,58 @@
+@startuml
+
+abstract class IBoard
+interface ICell
+class Board
+class MasterBoard
+class Cell
+ICell <|-- Cell
+ICell <|-- Board
+IBoard <|-- Board
+IBoard <|-- MasterBoard
+
+
+interface ICell{
+get_row():int
+get_col():int
+get_player(p):CellState
+set_player(p:CellState):void
+clear():void
+is_empty(): boolean
+
+}
+abstract class IBoard{
+ICell[][] cells
+int current_row
+int current_col
+initialize():void
+is_draw():boolean
+has_won(p:CellState):boolean
+}
+class Cell{
+-int row
+-int col
+-CellState player
+
+}
+class Board{
+Cell as_cell
+set_cell(row:int,col:int,p:CellState):void
+}
+class MasterBoard{
+set_cll_in_board(board_move:int[],cell_move:int[],p:CellState)
+is_taken(board_move:int[]):boolean
+}
+enum State {
+PLAYING
+DRAW
+CROSS_WON
+CIRCLE_WON
+}
+enum CellState {
+EMPTY
+CROSS
+CIRCLE
+NULL
+}
+
+@enduml

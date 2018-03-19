@@ -34,21 +34,27 @@ class AIPlayerRandom(AIPlayer):
     def move(self, board_move=None):
         if board_move is None:
             return
+
         if self.board.is_taken(board_move):
-            x = random.randint(0, 2)
-            y = random.randint(0, 2)
-            while self.board.is_taken((x, y)):
-                x = random.randint(1, 2)
-                y = random.randint(1, 2)
+            board_moves = []
+            for i in range(3):
+                for j in range(3):
+                    if not self.board.is_taken((i, j)):
+                        board_moves.append((i, j))
 
-            board_move = (x, y)
+            x = random.randint(0, len(board_moves) - 1)
 
-        x = random.randint(0, 2)
-        y = random.randint(0, 2)
-        while not self.board.cells[board_move[0]][board_move[1]].cells[x][y].is_empty():
-            x = random.randint(0, 2)
-            y = random.randint(0, 2)
-        cell_move = (x, y)
+            board_move = board_moves[x]
+
+        cell_moves = []
+        for i in range(3):
+            for j in range(3):
+                if self.board.cells[board_move[0]][board_move[1]].cells[i][j].is_empty():
+                    cell_moves.append((i, j))
+
+        x = random.randint(0, len(cell_moves) - 1)
+
+        cell_move = cell_moves[x]
 
         return board_move, cell_move
 
@@ -82,7 +88,7 @@ class AIPlayerMinimax(AIPlayer):
 
     """
         Minimax (recursive) at level of depth for maximizing or minimizing player
-        with alpha-beta cut-off. Return int[3] of {score, row, col}  
+        with alpha-beta cut-off. Return int[3] of {score, board_move[], cell_move[]}  
     """
 
     def minimax(self, depth, player, alpha, beta):
