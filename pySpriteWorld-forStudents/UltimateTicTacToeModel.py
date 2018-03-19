@@ -229,6 +229,14 @@ class Board(ICell, IBoard):
                 row.append(Cell(i, j))
             self.cells.append(row)
 
+    def get_empty_cells(self):
+        empty_cells = []
+        for i in range(3):
+            for j in range(3):
+                if self.cells[i][j].is_empty():
+                    empty_cells.append(([self.get_row(), self.get_col()], [i, j]))
+        return empty_cells
+
     """
         set_cell method change the state of cell that described by the row and the col in this board
         than it updates the current_row and current_col
@@ -300,10 +308,34 @@ class MasterBoard(IBoard):
             return State.DRAW
         # other wise the game continues
         return State.PLAYING
+
     """
         check if a mini board is taken or not, i.e either the mini board content is X or O or NULL
         :return true if the mini board is not empty, i
     """
+
     def is_taken(self, board):
         i, j = board
         return not self.cells[i][j].is_empty()
+
+    def get_possible_moves(self, board_move):
+        if not self.is_taken(board_move):
+            i, j = board_move
+            return self.cells[i][j].get_empty_cells()
+        else:
+            empty_cells = []
+            for i in range(3):
+                for j in range(3):
+                    if not self.is_taken((i, j)):
+                        empty_cells += self.cells[i][j].get_empty_cells()
+            return empty_cells
+
+    def check(self):
+        if self.has_won(CellState.CIRCLE):  # if there is a winner, we return who won
+            return CellState.CIRCLE
+        elif self.has_won(CellState.CROSS):  # if there is a winner, we return who won
+            return CellState.CROSS
+        elif self.is_draw():  # other wise, if there is a draw, we return Draw
+            return State.DRAW
+            # other wise the game continues
+        return State.PLAYING

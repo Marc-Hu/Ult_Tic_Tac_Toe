@@ -1,4 +1,4 @@
-from UltimateTicTacToeModel import *
+from UltimateTicTacToeModel import MasterBoard, CellState, State
 import random
 import time
 
@@ -9,7 +9,7 @@ import time
 """
 
 
-class AIPlayer(metaclass=abc.ABCMeta):
+class AIPlayer():
     def __init__(self, board, player):
         super(AIPlayer, self).__init__()
         self.board = board
@@ -22,16 +22,16 @@ class AIPlayer(metaclass=abc.ABCMeta):
         self.player1 = player  # ai player
         self.player2 = CellState.CIRCLE if player == CellState.CROSS else CellState.CROSS  # opponent
 
-    @abc.abstractmethod
     def move(self):
         pass
+
 
 class AIPlayerCorner(AIPlayer):
     def __init__(self, board, player):
         super(AIPlayerCorner, self).__init__(board, player)
-        self.corner=[(0, 0), (0, 1), (0, 2)]
-        self.rest=[(1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
-        self.player=player
+        self.corner = [(0, 0), (0, 1), (0, 2)]
+        self.rest = [(1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+        self.player = player
 
     def move(self, board_move=None):
         if board_move is None:
@@ -39,31 +39,30 @@ class AIPlayerCorner(AIPlayer):
 
         if self.board.is_taken(board_move):
             board_moves = []
-            find=False
+            find = False
             for i in range(3):
                 for j in range(3):
                     if not self.board.is_taken((i, j)):
-                        if (i, j) in self.corner :
-                            find=True
-                            board_move=(i, j)
+                        if (i, j) in self.corner:
+                            find = True
+                            board_move = (i, j)
                             break
                         board_moves.append((i, j))
-                if find :
+                if find:
                     break
-            if not find :
-                x=random.randint(0, len(self.rest)-1)
-                board_moves=self.rest[x]
-        found=False
+            if not find:
+                x = random.randint(0, len(self.rest) - 1)
+                board_moves = self.rest[x]
+        found = False
         for i in range(len(self.corner)):
             if self.board.cells[board_move[0]][board_move[1]].cells[self.corner[i][0]][self.corner[i][1]].is_empty():
-                cell_move=self.corner[i]
-                found=True
+                cell_move = self.corner[i]
+                found = True
         if not found:
             for i in range(len(self.rest)):
                 if self.board.cells[board_move[0]][board_move[1]].cells[self.rest[i][0]][self.rest[i][1]].is_empty():
-                    cell_move=self.rest[i]
+                    cell_move = self.rest[i]
         return board_move, cell_move
-
 
 
 class AIPlayerRandom(AIPlayer):
@@ -299,3 +298,164 @@ class AIPlayerMinimax(AIPlayer):
                 score = -1
 
         return score
+
+
+class Node:
+    def __init__(self, state=None, parent=None, children=None):
+        self.state = BoardState() if state is None else state
+        self.parent = parent
+        self.children = [] if children is None else children
+
+    def get_random_node(self):
+        return self.children[random.randint(0, len(self.children) - 1)]
+
+    def get_child_with_max_score(self):
+        max_node = [-1, None]
+        for child in self.children:
+            if child.state.visit_count > max_node[0]:
+                max_node = [child.state.get_visit_count(), child]
+        return max_node[1]
+
+
+class Tree:
+    def __init__(self):
+        self.root = Node()
+
+    def add_child(self, parent, child):
+        parent.children.append(child)
+
+
+import numpy as np
+
+
+class UCT:
+    @staticmethod
+    def uct_value(total_visit, node_win_score, node_visit):
+        if node_visit == 0:
+            return float('inf')
+        return (node_win_score * 1.0 / total_visit) + 1.41 * np.sqrt(np.log(total_visit) * 1.0 / node_visit)
+
+    def find_best_node_uct(self, node):
+        parent_visit = node.state.visit_count
+        max_node = [-1, None]
+        for child in node.children:
+            uct = UCT.uct_value(parent_visit, child.state.win_score, child.state.visit_count)
+            if uct > max_node[0]:
+                max_node = [uct, child]
+        return max_node[1]
+
+
+import copy
+
+
+class BoardState:
+    def __init__(self, board=None, player=CellState.EMPTY, visit_count=0, win_score=0):
+        self.board = MasterBoard() if board is None else board
+        self.player = player
+        self.visit_count = visit_count
+        self.win_score = win_score
+
+    def get_opponent(self):
+        return CellState.CIRCLE if self.player == CellState.CROSS else CellState.CROSS
+
+    def increment_visit(self):
+        self.visit_count += 1
+
+    def add_score(self, score):
+        if self.win_score != -float("inf"):
+            self.win_score += score
+
+    def get_possible_states(self):
+        states = []
+        empty_cells = self.board.get_empty_cells()
+        for b_move, c_move in empty_cells:
+            state = BoardState(copy.deepcopy(self.board), self.get_opponent())
+            state.board.set_cell_in_board(b_move, c_move, state.player)
+            states.append(state)
+        return states
+
+    def random_play(self):
+        empty_cells = self.board.get_empty_cells()
+        b_move, c_move = empty_cells[random.randint(len(empty_cells) - 1)]
+        self.board.set_cell_in_board(b_move, c_move, self.player)
+
+    def toggle_player(self):
+        self.player = CellState.CIRCLE if self.player == CellState.CROSS else CellState.CROSS
+
+
+WIN_SCORE = 10
+import time
+
+
+class MCTS:
+    def __init__(self, level=3):
+        self.level = level
+        self.oponent = None
+
+    def get_millis_for_current_level(self):
+        return 2 * (self.level - 1) + 1
+
+    def find_next_move(self, board, player):
+        start = int(round(time.time() * 1000))
+        end = start + 60 * self.get_millis_for_current_level()
+        self.oponent = CellState.CIRCLE if player == CellState.CROSS else CellState.CROSS
+        tree = Tree()
+        root = tree.root
+        root.state.board = board
+        root.state.player = self.oponent
+        while int(round(time.time() * 1000)) < end:
+            # selection
+            promising_node = self.select_promising_node(root)
+            # expansion
+            if promising_node.state.board.check() == State.PLAYING:
+                self.expand_node(promising_node)
+
+            # simulation
+            node_to_explore = promising_node
+            if len(promising_node.children) > 0:
+                node_to_explore = promising_node.get_random_node()
+
+            playout_result = self.simulate_random_playout(node_to_explore)
+
+            # update
+            self.back_propogation(node_to_explore, playout_result)
+
+        winner_node = root.get_child_with_max_score()
+        tree.root = winner_node
+        return winner_node.state.board
+
+    def select_promising_node(self, root):
+        node = root
+        while len(node.children) != 0:
+            node = UCT.find_best_node_uct(node)
+
+        return node
+
+    def expand_node(self, node):
+        states = node.state.get_possible_states()
+        for state in states:
+            new_node = Node(state)
+            new_node.parent = node
+            new_node.state.player = node.state.get_opponent()
+            node.children.append(new_node)
+
+    def back_propogation(self, node, player):
+        temp = node
+        while temp is not None:
+            temp.state.increment_visit()
+            if temp.state.player == player:
+                temp.state.add_score(WIN_SCORE)
+            temp = temp.parent
+
+    def simulate_random_playout(self, node):
+        temp_node = copy.deepcopy(node)
+        temp_state = temp_node.state
+        status = temp_state.board.check()
+        if status == self.oponent:
+            temp_node.parent.state.win_score = -float("inf")
+            return status
+        while status == State.PLAYING:
+            temp_state.toggle_player()
+            temp_state.random_play()
+            status = temp_state.board.check()
+        return status
