@@ -29,8 +29,8 @@ class AIPlayer(metaclass=abc.ABCMeta):
 class AIPlayerCorner(AIPlayer):
     def __init__(self, board, player):
         super(AIPlayerCorner, self).__init__(board, player)
-        self.corner=[(0, 0), (0, 1), (0, 2)]
-        self.rest=[(1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+        self.corner=[(2, 0), (0, 2), (0, 0)]
+        self.rest=[(2, 2), (2, 1), (1, 2), (1, 1), (1, 0), (0, 1)]
         self.player=player
 
     def move(self, board_move=None):
@@ -38,21 +38,17 @@ class AIPlayerCorner(AIPlayer):
             return
 
         if self.board.is_taken(board_move):
-            board_moves = []
             find=False
-            for i in range(3):
-                for j in range(3):
-                    if not self.board.is_taken((i, j)):
-                        if (i, j) in self.corner :
-                            find=True
-                            board_move=(i, j)
-                            break
-                        board_moves.append((i, j))
-                if find :
+            for i in range(len(self.corner)):
+                if not self.board.is_taken(self.corner[i]):
+                    board_move=self.corner[i]
+                    find=True
                     break
             if not find :
                 x=random.randint(0, len(self.rest)-1)
-                board_moves=self.rest[x]
+                while self.board.is_taken(self.rest[x]):
+                    x=random.randint(0, len(self.rest)-1)
+                board_move=self.rest[x]
         found=False
         for i in range(len(self.corner)):
             if self.board.cells[board_move[0]][board_move[1]].cells[self.corner[i][0]][self.corner[i][1]].is_empty():
