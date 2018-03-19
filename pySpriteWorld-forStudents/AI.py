@@ -29,31 +29,36 @@ class AIPlayer():
 class AIPlayerCorner(AIPlayer):
     def __init__(self, board, player):
         super(AIPlayerCorner, self).__init__(board, player)
-        self.corner = [(0, 0), (0, 1), (0, 2)]
-        self.rest = [(1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+        self.corner = [(2, 0), (0, 2), (0, 0)]
+        self.rest = [(2, 2), (2, 1), (1, 2), (1, 1), (1, 0), (0, 1)]
+        self.corner1 = [(2, 0), (0, 2), (0, 0)]
+        self.rest1 = [(2, 2), (2, 1), (1, 2), (1, 1), (1, 0), (0, 1)]
+        self.corner2 = [(2, 2), (0, 0), (0, 2)]
+        self.rest2 = [(2, 1), (2, 0), (1, 0), (1, 1), (1, 2), (0, 1)]
+        self.corner3 = [(2, 0), (0, 2), (2, 2)]
+        self.rest3 = [(0, 0), (0, 1), (1, 0), (1, 1), (2, 1), (1, 2)]
+        self.corner4 = [(2, 2), (0, 0), (2, 0)]
+        self.rest4 = [(1, 2), (0, 2), (0, 1), (1, 1), (2, 1), (1, 0)]
         self.player = player
 
     def move(self, board_move=None):
         if board_move is None:
             return
-
         if self.board.is_taken(board_move):
-            board_moves = []
+            self.choose_corner(board_move, self.board.cells)
             find = False
-            for i in range(3):
-                for j in range(3):
-                    if not self.board.is_taken((i, j)):
-                        if (i, j) in self.corner:
-                            find = True
-                            board_move = (i, j)
-                            break
-                        board_moves.append((i, j))
-                if find:
+            for i in range(len(self.corner)):
+                if not self.board.is_taken(self.corner[i]):
+                    board_move = self.corner[i]
+                    find = True
                     break
             if not find:
-                x = random.randint(0, len(self.rest) - 1)
-                board_moves = self.rest[x]
+                for i in range(len(self.rest)):
+                    if not self.board.is_taken(self.rest[i]):
+                        board_move = self.rest[i]
+
         found = False
+        self.choose_corner(board_move, self.board.cells[board_move[0]][board_move[1]].cells)
         for i in range(len(self.corner)):
             if self.board.cells[board_move[0]][board_move[1]].cells[self.corner[i][0]][self.corner[i][1]].is_empty():
                 cell_move = self.corner[i]
@@ -63,6 +68,24 @@ class AIPlayerCorner(AIPlayer):
                 if self.board.cells[board_move[0]][board_move[1]].cells[self.rest[i][0]][self.rest[i][1]].is_empty():
                     cell_move = self.rest[i]
         return board_move, cell_move
+
+    def choose_corner(self, board_move, cell):
+        if not str(cell[2][2]) == str(self.player)[10:] or not cell[2][2].is_empty():
+            self.corner = self.corner1
+            self.rest = self.rest1
+            return
+        if not str(cell[2][0]) == str(self.player)[10:] or not cell[2][0].is_empty():
+            self.corner = self.corner2
+            self.rest = self.rest2
+            return
+        if not str(cell[0][0]) == str(self.player)[10:] or not cell[0][0].is_empty():
+            self.corner = self.corner3
+            self.rest = self.rest3
+            return
+        if not str(cell[0][2]) == str(self.player)[10:] or not cell[0][2].is_empty():
+            self.corner = self.corner4
+            self.rest = self.rest4
+            return
 
 
 class AIPlayerRandom(AIPlayer):
@@ -459,3 +482,19 @@ class MCTS:
             temp_state.random_play()
             status = temp_state.board.check()
         return status
+
+
+class AIPlayerMCTS(AIPlayer):
+    def __init__(self, board, player):
+        super(AIPlayerMCTS, self).__init__(board, player)
+        self.mcts = MCTS()
+
+    def move(self, ):
+        board = self.mcts.find_next_move(copy.deepcopy(self.board), self.player1)
+        for i in range(3):
+            for j in range(3):
+                for k in range(3):
+                    for l in range(3):
+                        if board.cells[i][j].cells[k][l] != self.board.cells[i][j].cells[k][l]:
+                            return (i, j), (k, l)
+        

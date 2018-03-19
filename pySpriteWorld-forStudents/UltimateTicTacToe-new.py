@@ -45,7 +45,7 @@ def init(_boardname=None):
     game = Game('Cartes/' + name + '.json', SpriteBuilder)
     game.O = Ontology(True, 'SpriteSheet-32x32/tiny_spritesheet_ontology.csv')
     game.populate_sprite_names(game.O)
-    game.fps = 30  # frames per second
+    game.fps = 60  # frames per second
     game.mainiteration()
     game.mask.allow_overlaping_players = True
     # player = game.player
