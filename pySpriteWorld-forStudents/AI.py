@@ -36,8 +36,10 @@ class AIPlayerCorner(AIPlayer):
     def move(self, board_move=None):
         if board_move is None:
             return
-
+        self.choose_corner(board_move)
         if self.board.is_taken(board_move):
+            # print(str(self.player)[10:], self.board.cells[board_move[0]][board_move[1]])
+            # time.sleep(100)
             find=False
             for i in range(len(self.corner)):
                 if not self.board.is_taken(self.corner[i]):
@@ -60,7 +62,32 @@ class AIPlayerCorner(AIPlayer):
                     cell_move=self.rest[i]
         return board_move, cell_move
 
-
+    def choose_corner(self, board_move):
+        corner1=[(2, 0), (0, 2), (0, 0)]
+        rest1=[(2, 2), (2, 1), (1, 2), (1, 1), (1, 0), (0, 1)]
+        corner2=[(2, 2), (0, 0), (0, 2)]
+        rest2=[(2, 1), (2, 0), (1, 0), (1, 1), (1, 2), (0, 1)]
+        corner3=[(2, 0), (0, 2), (2, 2)]
+        rest3=[(0, 0), (0, 1), (1, 0), (1, 1), (2, 1), (1, 2)]
+        corner4=[(2, 2), (0, 0), (2, 0)]
+        rest4=[(1, 2), (0, 2), (0, 1), (1, 1), (2, 1), (1, 0)]
+        cell = self.board.cells[board_move[0]][board_move[1]]
+        if not str(cell.cells[2][2])==str(self.player)[10:] or not cell.cells[2][2].is_empty():
+            self.corner=corner1
+            self.rest=rest1
+            return
+        if not str(cell.cells[2][0])==str(self.player)[10:] or not cell.cells[2][0].is_empty():
+            self.corner=corner2
+            self.rest=rest2
+            return
+        if not str(cell.cells[0][0])==str(self.player)[10:] or not cell.cells[0][0].is_empty():
+            self.corner=corner3
+            self.rest=rest3
+            return
+        if not str(cell.cells[0][2])==str(self.player)[10:] or not cell.cells[0][2].is_empty():
+            self.corner=corner4
+            self.rest=rest4
+            return  
 
 class AIPlayerRandom(AIPlayer):
 
